@@ -1,5 +1,5 @@
 import numpy as np
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, transpile, execute
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 from qiskit.circuit.library import QFT
 from qiskit.quantum_info import Statevector, Operator
 
@@ -56,7 +56,7 @@ def phase_estimate(b: QuantumRegister, clock: QuantumRegister, unitary: np.ndarr
     # Run QFT
     qft = QFT(num_qubits=clock.size).to_gate()
     circuit.append(qft, np.arange(clock.size) + b.size)
-     return circuit
+    return circuit
 
 
 def controlled_rotation(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qubit: QuantumRegister) -> QuantumCircuit:
