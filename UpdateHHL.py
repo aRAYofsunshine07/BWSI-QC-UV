@@ -4,31 +4,6 @@ from qiskit.circuit.library import QFT
 from qiskit.quantum_info import Statevector, Operator
 # Custom import and other werid imports removed 
 
-
-# Define matrix (A) and vector (b)
-A = np.array([[1, -1], [1, 1]])
-b = np.array([1, 0])
-
-# Normalize the vector b
-norm_b = np.linalg.norm(b)
-b_normalized = b / norm_b
-
-# Number of qubits
-n = A.shape[0]
-num_qubits = int(np.log2(n)) + 1
-
-# Create registers
-b_qubits = QuantumRegister(n, name='b')
-clock_qubits = QuantumRegister(num_qubits, name='clock')
-ancilla_qubit = QuantumRegister(1, name='ancilla')
-classical_reg = ClassicalRegister(n, name='measure')
-
-# Initialize circuit
-qc = QuantumCircuit(b_qubits, clock_qubits, ancilla_qubit, classical_reg)
-
-# Prepare initial state to vector b
-qc.initialize(b_normalized.tolist(), b_qubits)
-
 class PhaseEstimation:
     @staticmethod
     def phase_estimate(b: QuantumRegister, clock: QuantumRegister, unitary: np.ndarray) -> QuantumCircuit:
@@ -74,6 +49,30 @@ def rotate_ancilla(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qu
 def inverse_qpe(qc: QuantumCircuit, clock_qubits: QuantumRegister) -> QuantumCircuit:
     qc.append(QFT(len(clock_qubits), do_swaps=False).inverse(), clock_qubits)
     return qc
+
+# Define matrix (A) and vector (b)
+A = np.array([[1, -1], [1, 1]])
+b = np.array([1, 0])
+
+# Normalize the vector b
+norm_b = np.linalg.norm(b)
+b_normalized = b / norm_b
+
+# Number of qubits
+n = A.shape[0]
+num_qubits = int(np.log2(n)) + 1
+
+# Create registers
+b_qubits = QuantumRegister(n, name='b')
+clock_qubits = QuantumRegister(num_qubits, name='clock')
+ancilla_qubit = QuantumRegister(1, name='ancilla')
+classical_reg = ClassicalRegister(n, name='measure')
+
+# Initialize circuit
+qc = QuantumCircuit(b_qubits, clock_qubits, ancilla_qubit, classical_reg)
+
+# Prepare initial state to vector b
+qc.initialize(b_normalized.tolist(), b_qubits)
 
 # COMPLETE CIRCUIT
 phase_estimation_circuit = PhaseEstimation.phase_estimate(b_qubits, clock_qubits, A)
