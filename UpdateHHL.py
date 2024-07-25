@@ -1,8 +1,9 @@
 import numpy as np
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, transpile
 from qiskit_aer import AerSimulator
 from qiskit.circuit.library import QFT
 from qiskit.quantum_info import Operator
+from typing import List
 
 # Define matrix (A) and vector (b)
 A = (1 / np.sqrt(2)) * np.array([[1, -1], [1, 1]])
@@ -96,7 +97,7 @@ qc.measure(b_qubits, classical_reg)
 # Simulation
 simulator = Aer_simulator
 qc = transpile(qc, simulator)
-result = execute(qc, simulator, shots=1024).result()
+result = simulator.run(qc, simulator, shots=1024).result()
 counts = result.get_counts()
 
 print("Measurement results:", counts)
