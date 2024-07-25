@@ -33,6 +33,10 @@ class PhaseEstimation:
     def phase_estimate(b: QuantumRegister, clock: QuantumRegister, unitary: np.ndarray) -> QuantumCircuit:
         circuit = QuantumCircuit(b, clock)
 
+        #Hadamard transform on clock qbits
+        for i in range(clock.size):
+            circuit.h(clock[i])
+        
         # Turn U gate matrix into controlled U gate matrix where MSB is control
         checked_unitary = np.zeros([len(unitary) * 2, len(unitary) * 2])
         for i in range(len(unitary)):
