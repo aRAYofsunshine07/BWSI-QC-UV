@@ -80,17 +80,6 @@ phase_estimate(qc, b_qubits, clock_qubits, A)
 # controlled Rotation
 controlled_rotation(qc, clock_qubits, ancilla_qubit)
 
-qc.measure(ancilla, 0)
-result = AerSimulator().run(qc, shots=1, memory=True).result()
-s = result.get_memory()[0]\
-
-#conditional ancilla control
-if s == '0':
-    # phase Estimation
-    phase_estimate(qc, b_qubits, clock_qubits, A)
-
-    # controlled Rotation
-    controlled_rotation(qc, clock_qubits, ancilla_qubit)
 
 # inverse QPE
 inverse_qpe(qc, clock_qubits)
