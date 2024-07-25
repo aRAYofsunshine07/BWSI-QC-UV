@@ -6,7 +6,7 @@ from qiskit.quantum_info import Statevector, Operator
 # Custom import and other werid imports removed 
 
 # Define matrix (A) and vector (b)
-A = np.array([[1, -1], [1, 1]])
+A = (1/np.sqrt(2)) * np.array([[1, -1], [1, 1]])
 b = np.array([1, 0])
 
 # Normalize the vector b
