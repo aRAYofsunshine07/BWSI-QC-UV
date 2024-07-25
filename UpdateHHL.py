@@ -1,7 +1,8 @@
 import numpy as np
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, Aer, transpile, execute
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, transpile, execute
 from qiskit.circuit.library import QFT
 from qiskit.quantum_info import Statevector, Operator
+
 # Custom import and other werid imports removed 
 
 # Define matrix (A) and vector (b)
@@ -86,12 +87,9 @@ inverse_qpe(qc, clock_qubits)
 qc.measure(b_qubits, classical_reg)
 
 
-# Simulataion + compelte measurement 
-simulator = Aer.get_backend('aer_simulator')
-compiled_circuit = transpile(qc, simulator)
-result = simulator.run(compiled_circuit).result()
-counts = result.get_counts()
+# Simulataion 
+state = Statevector.from_label('0' * (n + num_qubits + 1))
+state = state.evolve(qc)
+probabilities = state.probabilities_dict()
 
-print("Measurement results:", counts)
-
-
+print("Statevector probabilities:", probabilities)
