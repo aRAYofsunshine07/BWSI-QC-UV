@@ -81,7 +81,7 @@ def inverse_qpe(qc, clock_qubits):
     qc.h(clock_qubits)
     qc.barrier()
 
-# phase Estimation
+# phase Estimation, error here 
 phase_estimate(qc, b_qubits, clock_qubits, A)
 
 # controlled Rotation
