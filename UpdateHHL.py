@@ -95,9 +95,9 @@ inverse_qpe(qc, clock_qubits)
 qc.measure(b_qubits, classical_reg)
 
 # Simulation
-simulator = Aer_simulator
-qc = transpile(qc, simulator)
-result = simulator.run(qc, simulator, shots=1024).result()
-counts = result.get_counts()
+simulator = AerSimulator()
+qc.save_statevector()
+result = simulator.run(qc).result()
+statevector = result.get_statevector()
 
-print("Measurement results:", counts)
+print("Statevector:", statevector)
