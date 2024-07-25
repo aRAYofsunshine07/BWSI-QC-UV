@@ -58,7 +58,7 @@ def phase_estimate(b: QuantumRegister, clock: QuantumRegister, unitary: np.ndarr
      return circuit
 
 
-def rotate_ancilla(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qubit: QuantumRegister) -> QuantumCircuit:
+def controlled_rotation(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qubit: QuantumRegister) -> QuantumCircuit:
     # Crotating the ancilla qubit per clock-qubit
     for i in range(clock_qubits.size):
         angle = 2 * np.arcsin(i / (clock_qubits.size - 1))
