@@ -1,5 +1,6 @@
 import numpy as np
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, Aer, execute, transpile
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
+from qiskit_aer import AerSimulator
 from qiskit.circuit.library import QFT
 from qiskit.quantum_info import Operator
 
@@ -93,7 +94,7 @@ inverse_qpe(qc, clock_qubits)
 qc.measure(b_qubits, classical_reg)
 
 # Simulation
-simulator = Aer.get_backend('aer_simulator')
+simulator = Aer_simulator
 qc = transpile(qc, simulator)
 result = execute(qc, simulator, shots=1024).result()
 counts = result.get_counts()
