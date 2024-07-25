@@ -7,7 +7,7 @@ from qiskit.quantum_info.operators import Operator
 from qiskit.circuit.library import QFT
 
 class PhaseEstimation:
-    def PhaseEstimate(b: QuantumRegister, clock: QuantumRegister, unitary: List[List[float]]) -> QuantumCircuit:
+    def PhaseEstimate(b: QuantumRegister, clock: QuantumRegister, unitary: List[List[complex]]) -> QuantumCircuit:
         circuit = QuantumCircuit(b, clock)
         circuit.h(clock)
         #Turns U gate matrix into controlled U gate matrix where MSB is control
@@ -16,7 +16,7 @@ class PhaseEstimation:
             for j in range(len(unitary)):
                 if(i == j):
                     checkedUnitary[i][j] = 1
-                checkedUnitary[i + 4][j + 4] = unitary[i][j]
+                checkedUnitary[i + len(unitary)][j + len(unitary)] = unitary[i][j]
         #Creates gate from matrix
         unitaryGate = Operator(checkedUnitary)
         #Runs controlled U gate the correct amount of times for each clock qubit
