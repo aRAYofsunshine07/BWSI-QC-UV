@@ -18,8 +18,8 @@ n = A.shape[0]
 num_qubits = int(np.ceil(np.log2(n)))
 
 # Create registers
-b_qubits = QuantumRegister(n, name='b')
-clock_qubits = QuantumRegister(num_qubits, name='clock')
+b_qubits = QuantumRegister(num_qubits, name='b')
+clock_qubits = QuantumRegister(n, name='clock')
 ancilla_qubit = QuantumRegister(1, name='ancilla')
 classical_reg = ClassicalRegister(n, name='measure')
 
@@ -71,7 +71,7 @@ def PhaseEstimate(b: QuantumRegister, clock: QuantumRegister, unitary: List[List
     return circuit
 
 phase_estimation_circuit = phase_estimate(b_qubits, clock_qubits, A)
-qc.compose(phase_estimation_circuit, b_qubits[:] + clock_qubits[:], inplace=True)
+qc.compose(phase_estimation_circuit, inplace=True)
 
 def controlled_rotation(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qubit: QuantumRegister) -> QuantumCircuit:
     # Crotating the ancilla qubit per clock-qubit
