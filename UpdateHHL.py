@@ -45,27 +45,25 @@ def phase_estimate(b: QuantumRegister, clock: QuantumRegister, unitary: np.ndarr
         circuit.h(clock[i])
 
     # Turn U gate matrix into controlled U gate matrix where MSB is control
-    dim = len(unitary)
-    checked_unitary = np.zeros((2 * dim, 2 * dim), dtype=complex)
-    for i in range(dim):
-        checked_unitary[i, i] = 1
-        for j in range(dim):
-            checked_unitary[i + dim, j + dim] = unitary[i, j]
+    checked_unitary = np.zeros([len(unitary) * 2, len(unitary) * 2])
+    for i in range(len(unitary)):
+        for j in range(len(unitary)):
+            if i == j:
+                checked_unitary[i][j] = 1
+            checked_unitary[i + len(unitary)][j + len(unitary)] = unitary[i][j]
 
     # Create gate from matrix
     unitary_gate = Operator(checked_unitary)
 
     # Run controlled U gate the correct amount of times for each clock qubit
     for i in range(clock.size):
-        control_qubit = clock[i]
-        target_qubits = list(range(b.size))
+        control_array = list(range(b.size)) + [i + b.size]
         for _ in range(2 ** i):
-            circuit.append(unitary_gate.control(), [control_qubit] + target_qubits)
+            circuit.unitary(unitary_gate, control_array)
 
-    # Run QFT on the clock register
+    # Run QFT
     qft = QFT(num_qubits=clock.size).to_gate()
-    circuit.append(qft, clock)
-
+    circuit.append(qft, np.arange(clock.size) + b.size)
     return circuit
 
 def controlled_rotation(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qubit: QuantumRegister) -> QuantumCircuit:
@@ -84,7 +82,7 @@ def inverse_qpe(qc, clock_qubits):
     qc.barrier()
 
 # phase Estimation
-phase_estimate(qc, b_qubits, clock_qubits)
+phase_estimate(qc, b_qubits, clock_qubits, A)
 
 # controlled Rotation
 controlled_rotation(qc, clock_qubits, ancilla_qubit)
