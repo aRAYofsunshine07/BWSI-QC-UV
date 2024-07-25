@@ -70,7 +70,7 @@ def PhaseEstimate(b: QuantumRegister, clock: QuantumRegister, unitary: List[List
     circuit.append(qft, qargs = [i + b.size for i in range(clock.size)])
     return circuit
 
-phase_estimation_circuit = phase_estimate(b_qubits, clock_qubits, A)
+phase_estimation_circuit = PhaseEstimate(b_qubits, clock_qubits, A)
 qc.compose(phase_estimation_circuit, inplace=True)
 
 def controlled_rotation(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qubit: QuantumRegister) -> QuantumCircuit:
