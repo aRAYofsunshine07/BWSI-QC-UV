@@ -70,6 +70,25 @@ def rotate_ancilla(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qu
 # Updated 
 def inverse_qpe(qc: QuantumCircuit, clock_qubits: QuantumRegister) -> QuantumCircuit:
     qc.append(QFT(len(clock_qubits), do_swaps=False).inverse(), clock_qubits)
+
+    #copy-paste of the QPE operation :)
+    checked_unitary = np.zeros([len(unitary) * 2, len(unitary) * 2])
+    for i in range(len(unitary)):
+        for j in range(len(unitary)):
+            if i == j:
+                checked_unitary[i][j] = -1 #idk if this is correct
+            checked_unitary[i + len(unitary)][j + len(unitary)] = unitary[i][j]
+
+    unitary_gate = Operator(checked_unitary)
+
+    for i in range(clock.size):
+        control_array = list(range(b.size)) + [i + b.size]
+        for _ in range(2 ** i):
+            circuit.unitary(unitary_gate, control_array)
+
+    #Hadamard transform on clock qbits
+    for i in range(clock.size):
+        circuit.h(clock[i])
     return qc
 
 # COMPLETE CIRCUIT
