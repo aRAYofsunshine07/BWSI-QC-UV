@@ -13,12 +13,15 @@ b = np.array([1, 0])
 norm_b = np.linalg.norm(b)
 b_normalized = b / norm_b
 
-# Define the number of qubits (Updated)
-num_qubits = int(np.log2(A.shape[0])) + 1
-b_qubits = QuantumRegister(num_qubits, name='b')
+# Number of qubits
+n = A.shape[0]
+num_qubits = int(np.log2(n)) + 1
+
+# Create registers
+b_qubits = QuantumRegister(n, name='b')
 clock_qubits = QuantumRegister(num_qubits, name='clock')
 ancilla_qubit = QuantumRegister(1, name='ancilla')
-classical_reg = ClassicalRegister(1, name='measure')
+classical_reg = ClassicalRegister(n, name='measure')
 
 # Initialize circuit
 qc = QuantumCircuit(b_qubits, clock_qubits, ancilla_qubit, classical_reg)
