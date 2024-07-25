@@ -40,32 +40,33 @@ prepare_initial_state(qc, b_qubits, b_normalized)
 def phase_estimate(b: QuantumRegister, clock: QuantumRegister, unitary: np.ndarray) -> QuantumCircuit:
     circuit = QuantumCircuit(b, clock)
 
-    #Hadamard transform on clock qbits
+    # Hadamard transform on clock qubits
     for i in range(clock.size):
         circuit.h(clock[i])
-        
+
     # Turn U gate matrix into controlled U gate matrix where MSB is control
-    checked_unitary = np.zeros([len(unitary) * 2, len(unitary) * 2])
-    for i in range(len(unitary)):
-        for j in range(len(unitary)):
-            if i == j:
-                checked_unitary[i][j] = 1
-            checked_unitary[i + len(unitary)][j + len(unitary)] = unitary[i][j]
+    dim = len(unitary)
+    checked_unitary = np.zeros((2 * dim, 2 * dim), dtype=complex)
+    for i in range(dim):
+        checked_unitary[i, i] = 1
+        for j in range(dim):
+            checked_unitary[i + dim, j + dim] = unitary[i, j]
 
     # Create gate from matrix
     unitary_gate = Operator(checked_unitary)
 
     # Run controlled U gate the correct amount of times for each clock qubit
     for i in range(clock.size):
-        control_array = list(range(b.size)) + [i + b.size]
+        control_qubit = clock[i]
+        target_qubits = list(range(b.size))
         for _ in range(2 ** i):
-            circuit.unitary(unitary_gate, control_array)
+            circuit.append(unitary_gate.control(), [control_qubit] + target_qubits)
 
-    # Run QFT
+    # Run QFT on the clock register
     qft = QFT(num_qubits=clock.size).to_gate()
-    circuit.append(qft, np.arange(clock.size) + b.size)
-    return circuit
+    circuit.append(qft, clock)
 
+    return circuit
 
 def controlled_rotation(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qubit: QuantumRegister) -> QuantumCircuit:
     # Crotating the ancilla qubit per clock-qubit
