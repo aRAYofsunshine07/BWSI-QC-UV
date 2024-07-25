@@ -97,7 +97,7 @@ qc.measure(b_qubits, classical_reg)
 # Simulation
 simulator = AerSimulator()
 qc.save_statevector()
-result = simulator.run(qc).result()
+result = simulator.run(qc, shots = 1024, memory = True).result()
 statevector = result.get_statevector()
 
 print("Statevector:", statevector)
