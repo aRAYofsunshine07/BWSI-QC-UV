@@ -1,5 +1,6 @@
 import numpy as np
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, Aer, transpile, execute
+from qiskit_AerSimulator import AerSimulator
 from qiskit.circuit.library import QFT
 from qiskit.quantum_info import Statevector, Operator
 # Custom import and other werid imports removed 
@@ -78,6 +79,15 @@ phase_estimate(qc, b_qubits, clock_qubits, A)
 
 # controlled Rotation
 controlled_rotation(qc, clock_qubits, ancilla_qubit)
+
+#measuring ancilla and repeating QPE if is 0
+qc.measure(ancilla, 0)
+result = AerSimulator().run(qc, shots=1, memory=True).result()
+s = result.get_memory()[0]
+
+if s == '0':
+    phase_estimate(qc, b_qubits, clock_qubits, A)
+    controlled_rotation(qc, clock_qubits, ancilla_qubit)
 
 # inverse QPE
 inverse_qpe(qc, clock_qubits)
