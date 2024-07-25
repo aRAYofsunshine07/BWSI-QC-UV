@@ -26,8 +26,16 @@ classical_reg = ClassicalRegister(n, name='measure')
 # Initialize circuit
 qc = QuantumCircuit(b_qubits, clock_qubits, ancilla_qubit, classical_reg)
 
-# Prepare initial state to vector b
-qc.initialize(b_normalized.tolist(), b_qubits)
+# prepare initial state to vector b
+def prepare_initial_state(circuit, qubits, vector):
+    norm = np.linalg.norm(vector)
+    theta = 2 * np.arccos(vector[0] / norm)
+    circuit.ry(theta, qubits[0])
+    if len(vector) > 1 and vector[1] != 0:
+        phi = np.angle(vector[1])
+        circuit.rz(phi, qubits[0])
+
+prepare_initial_state(qc, b_qubits, b_normalized)
 
 def phase_estimate(b: QuantumRegister, clock: QuantumRegister, unitary: np.ndarray) -> QuantumCircuit:
     circuit = QuantumCircuit(b, clock)
