@@ -15,7 +15,7 @@ b_normalized = b / norm_b
 
 # Number of qubits
 n = A.shape[0]
-num_qubits = int(np.log2(n)) + 1
+num_qubits = int(np.ceil(np.log2(n)))
 
 # Create registers
 b_qubits = QuantumRegister(n, name='b')
