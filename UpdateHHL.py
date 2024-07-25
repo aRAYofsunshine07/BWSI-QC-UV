@@ -24,9 +24,7 @@ classical_reg = ClassicalRegister(1, name='measure')
 qc = QuantumCircuit(b_qubits, clock_qubits, ancilla_qubit, classical_reg)
 
 # Prepare initial state to vector b
-initial_state = Statevector.from_label('0' * num_qubits)
-initial_state.data = b_normalized.tolist()
-qc.initialize(initial_state.data, b_qubits)
+qc.initialize(b_normalized.tolist(), b_qubits)
 
 class PhaseEstimation:
     @staticmethod
