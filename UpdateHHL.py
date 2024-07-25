@@ -28,7 +28,7 @@ qc = QuantumCircuit(b_qubits, clock_qubits, ancilla_qubit, classical_reg)
 # Prepare initial state to vector b
 qc.initialize(b_normalized.tolist(), b_qubits)
 
-]def phase_estimate(b: QuantumRegister, clock: QuantumRegister, unitary: np.ndarray) -> QuantumCircuit:
+def phase_estimate(b: QuantumRegister, clock: QuantumRegister, unitary: np.ndarray) -> QuantumCircuit:
     circuit = QuantumCircuit(b, clock)
 
     #Hadamard transform on clock qbits
