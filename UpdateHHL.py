@@ -63,22 +63,25 @@ def rotate_ancilla(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qu
         angle = 2 * np.arcsin(i / (clock_qubits.size - 1))
         qc.cry(angle, clock_qubits[i], ancilla_qubit[0])
 
-    qc.measure(ancilla_qubit[0], classical_reg[0])
-    return qc
 
 # Updated 
-def inverse_qpe(qc: QuantumCircuit, clock_qubits: QuantumRegister) -> QuantumCircuit:
-    qc.append(QFT(len(clock_qubits), do_swaps=False).inverse(), clock_qubits)
-    return qc
+def inverse_qpe(qc, clock_qubits):
+    qc.append(QFT(len(clock_qubits)), clock_qubits)
+    qc.h(clock_qubits)
+    qc.barrier()
 
+# phase Estimation
+phase_estimate(qc, b_qubits, clock_qubits, A)
 
-# COMPLETE CIRCUIT
-phase_estimation_circuit = PhaseEstimation.phase_estimate(b_qubits, clock_qubits, A)
-qc.append(phase_estimation_circuit, b_qubits[:] + clock_qubits[:])
+# controlled Rotation
+controlled_rotation(qc, clock_qubits, ancilla_qubit)
+
+# inverse QPE
 inverse_qpe(qc, clock_qubits)
-rotate_ancilla(qc, clock_qubits, ancilla_qubit)
 
-print(qc)
+# Measure
+qc.measure(b_qubits, classical_reg)
+
 
 # Simulataion + compelte measurement 
 simulator = Aer.get_backend('aer_simulator')
