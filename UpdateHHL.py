@@ -55,6 +55,7 @@ def phase_estimate(b: QuantumRegister, clock: QuantumRegister, unitary: np.ndarr
     # Run QFT
     qft = QFT(num_qubits=clock.size).to_gate()
     circuit.append(qft, np.arange(clock.size) + b.size)
+     return circuit
 
 
 def rotate_ancilla(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qubit: QuantumRegister) -> QuantumCircuit:
@@ -62,11 +63,13 @@ def rotate_ancilla(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qu
     for i in range(clock_qubits.size):
         angle = 2 * np.arcsin(i / (clock_qubits.size - 1))
         qc.cry(angle, clock_qubits[i], ancilla_qubit[0])
+    return qc
 
 
 # Updated 
 def inverse_qpe(qc, clock_qubits):
-    qc.append(QFT(len(clock_qubits)), clock_qubits)
+    qft_inv = QFT(len(clock_qubits)).inverse()
+    qc.append(qft_inv, clock_qubits)
     qc.h(clock_qubits)
     qc.barrier()
 
