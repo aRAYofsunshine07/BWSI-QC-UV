@@ -37,33 +37,36 @@ def prepare_initial_state(circuit, qubits, vector):
 
 prepare_initial_state(qc, b_qubits, b_normalized)
 
-def phase_estimate(b: QuantumRegister, clock: QuantumRegister, unitary: np.ndarray) -> QuantumCircuit:
+def PhaseEstimate(b: QuantumRegister, clock: QuantumRegister, unitary: List[List[complex]]) -> QuantumCircuit:
     circuit = QuantumCircuit(b, clock)
-
-    # Hadamard transform on clock qubits
-    for i in range(clock.size):
-        circuit.h(clock[i])
-
-    # Turn U gate matrix into controlled U gate matrix where MSB is control
-    checked_unitary = np.zeros([len(unitary) * 2, len(unitary) * 2])
+    circuit.h(clock)
+    #Turns U gate matrix into controlled U gate matrix where MSB is control
+    #This implementation is really messy but it works at least
+    checkedUnitary = []
+    for _ in range(len(unitary) * 2):
+        row = []
+        for _ in range(len(unitary) * 2):
+            row.append(complex(0, 0))
+        checkedUnitary.append(row)
     for i in range(len(unitary)):
         for j in range(len(unitary)):
-            if i == j:
-                checked_unitary[i][j] = 1
-            checked_unitary[i + len(unitary)][j + len(unitary)] = unitary[i][j]
-
-    # Create gate from matrix
-    unitary_gate = Operator(checked_unitary)
-
-    # Run controlled U gate the correct amount of times for each clock qubit
+            if(i == j):
+                checkedUnitary[i][j] = complex(1, 0)
+            checkedUnitary[i + len(unitary)][j + len(unitary)] = unitary[i][j]
+    #Creates gate from matrix
+    unitaryGate = Operator(checkedUnitary)
+    #Runs controlled U gate the correct amount of times for each clock qubit
     for i in range(clock.size):
-        control_array = list(range(b.size)) + [i + b.size]
-        for _ in range(2 ** i):
-            circuit.unitary(unitary_gate, control_array)
-
-    # Run QFT
-    qft = QFT(num_qubits=clock.size).to_gate()
-    circuit.append(qft, np.arange(clock.size) + b.size)
+        #array is the input for the controlled U gate
+        array = []
+        for j in range(b.size):
+            array.append(j)
+        array.append(i + b.size)
+        for _ in range(int(2.0 ** float(i))):
+            circuit.unitary(unitaryGate, qubits = array)
+    #Runs QFT
+    qft = QFT(inverse = True, num_qubits = clock.size).to_gate()
+    circuit.append(qft, qargs = [i + b.size for i in range(clock.size)])
     return circuit
 
 def controlled_rotation(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qubit: QuantumRegister) -> QuantumCircuit:
@@ -82,7 +85,7 @@ def inverse_qpe(qc, clock_qubits):
     qc.barrier()
 
 # phase Estimation, error here 
-phase_estimate(qc, b_qubits, clock_qubits, A)
+phase_estimate(b_qubits, clock_qubits, A)
 
 # controlled Rotation
 controlled_rotation(qc, clock_qubits, ancilla_qubit)
