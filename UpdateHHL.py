@@ -90,31 +90,27 @@ def main():
 
     controlled_rotation(qc, clock_qubits, ancilla_qubit)
 
+    inverse_qpe(qc, clock_qubits)
+
     qc.measure(ancilla_qubit, 0)
     result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
     s = result.get_memory()[0]
 
     while s == '0':
-        A = (1 / np.sqrt(2)) * np.array([[1, -1], [1, 1]])
-        b = np.array([1, 0])
-        norm_b = np.linalg.norm(b)
-        b_normalized = b / norm_b
-        n = A.shape[0]
-        num_qubits = int(np.ceil(np.log2(n)))
-        b_qubits = QuantumRegister(num_qubits, name='b')
-        clock_qubits = QuantumRegister(n, name='clock')
-        ancilla_qubit = QuantumRegister(1, name='ancilla')
-        classical_reg = ClassicalRegister(n, name='measure')
-        qc = QuantumCircuit(b_qubits, clock_qubits, ancilla_qubit, classical_reg)
-        prepare_initial_state(qc, b_qubits, b_normalized)
+        qc.add_register(ancilla_qubit)
+
         phase_estimation_circuit = PhaseEstimate(b_qubits, clock_qubits, A)
         qc.compose(phase_estimation_circuit, inplace=True)
+
         controlled_rotation(qc, clock_qubits, ancilla_qubit)
+
+        inverse_qpe(qc, clock_qubits)
+
         qc.measure(ancilla_qubit, 0)
         result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
         s = result.get_memory()[0]
 
-    inverse_qpe(qc, clock_qubits)
+    
 
     # Measure
     qc.measure(b_qubits, classical_reg)
