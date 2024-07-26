@@ -91,7 +91,7 @@ def main():
     controlled_rotation(qc, clock_qubits, ancilla_qubit)
 
     qc.measure(ancilla_qubit, 0)
-    result = AerSimulator().run(qc, shots=1, memory=True).result()
+    result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
     s = result.get_memory()[0]
 
     while s == '0':
@@ -101,7 +101,7 @@ def main():
         controlled_rotation(qc, clock_qubits, ancilla_qubit)
 
         qc.measure(ancilla_qubit, 0)
-        result = AerSimulator().run(qc, shots=1, memory=True).result()
+        result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
         s = result.get_memory()[0]
 
     inverse_qpe(qc, clock_qubits)
