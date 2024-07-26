@@ -1,30 +1,9 @@
 import numpy as np
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, transpile
 from qiskit_aer import AerSimulator
 from qiskit.circuit.library import QFT
 from qiskit.quantum_info import Operator
 from typing import List
-
-# Define matrix (A) and vector (b)
-A = (1 / np.sqrt(2)) * np.array([[1, -1], [1, 1]])
-b = np.array([1, 0])
-
-# Normalize the vector b
-norm_b = np.linalg.norm(b)
-b_normalized = b / norm_b
-
-# Number of qubits
-n = A.shape[0]
-num_qubits = int(np.ceil(np.log2(n)))
-
-# Create registers
-b_qubits = QuantumRegister(num_qubits, name='b')
-clock_qubits = QuantumRegister(n, name='clock')
-ancilla_qubit = QuantumRegister(1, name='ancilla')
-classical_reg = ClassicalRegister(n, name='measure')
-
-# Initialize circuit
-qc = QuantumCircuit(b_qubits, clock_qubits, ancilla_qubit, classical_reg)
 
 # Prepare initial state to vector b
 def prepare_initial_state(circuit, qubits, vector):
@@ -34,9 +13,6 @@ def prepare_initial_state(circuit, qubits, vector):
     if len(vector) > 1 and vector[1] != 0:
         phi = np.angle(vector[1])
         circuit.rz(phi, qubits[0])
-
-prepare_initial_state(qc, b_qubits, b_normalized)
-
 
 def PhaseEstimate(b: QuantumRegister, clock: QuantumRegister, unitary: List[List[complex]]) -> QuantumCircuit:
     circuit = QuantumCircuit(b, clock)
@@ -70,17 +46,12 @@ def PhaseEstimate(b: QuantumRegister, clock: QuantumRegister, unitary: List[List
     circuit.append(qft, qargs = [i + b.size for i in range(clock.size)])
     return circuit
 
-phase_estimation_circuit = PhaseEstimate(b_qubits, clock_qubits, A)
-qc.compose(phase_estimation_circuit, inplace=True)
-
 def controlled_rotation(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qubit: QuantumRegister) -> QuantumCircuit:
     # Crotating the ancilla qubit per clock-qubit
     for i in range(clock_qubits.size):
         angle = 2 * np.arcsin(i / (clock_qubits.size - 1))
         qc.cry(angle, clock_qubits[i], ancilla_qubit[0])
     return qc
-    
-controlled_rotation(qc, clock_qubits, ancilla_qubit)
 
 # Updated 
 def inverse_qpe(qc: QuantumCircuit, clock_qubits: QuantumRegister):
@@ -89,15 +60,50 @@ def inverse_qpe(qc: QuantumCircuit, clock_qubits: QuantumRegister):
     qc.h(clock_qubits)
     qc.barrier()
 
-inverse_qpe(qc, clock_qubits)
 
-# Measure
-qc.measure(b_qubits, classical_reg)
+def main(): 
+    # Define matrix (A) and vector (b)
+    A = (1 / np.sqrt(2)) * np.array([[1, -1], [1, 1]])
+    b = np.array([1, 0])
 
-# Simulation
-simulator = AerSimulator()
-qc.save_statevector()
-result = simulator.run(qc, shots = 1024, memory = True).result()
-statevector = result.get_statevector()
+    # Normalize the vector b
+    norm_b = np.linalg.norm(b)
+    b_normalized = b / norm_b
 
-print("Statevector:", statevector)
+    # Number of qubits
+    n = A.shape[0]
+    num_qubits = int(np.ceil(np.log2(n)))
+
+    # Create registers
+    b_qubits = QuantumRegister(num_qubits, name='b')
+    clock_qubits = QuantumRegister(n, name='clock')
+    ancilla_qubit = QuantumRegister(1, name='ancilla')
+    classical_reg = ClassicalRegister(n, name='measure')
+
+    # Initialize circuit
+    qc = QuantumCircuit(b_qubits, clock_qubits, ancilla_qubit, classical_reg)
+
+    prepare_initial_state(qc, b_qubits, b_normalized)
+
+    phase_estimation_circuit = PhaseEstimate(b_qubits, clock_qubits, A)
+    qc.compose(phase_estimation_circuit, inplace=True)
+
+    controlled_rotation(qc, clock_qubits, ancilla_qubit)
+
+    inverse_qpe(qc, clock_qubits)
+
+    # Measure
+    qc.measure(b_qubits, classical_reg)
+
+    # Simulation
+    simulator = AerSimulator()
+    qc.save_statevector()
+    transpiled = transpile(qc, simulator)
+    result = simulator.run(transpiled, shots = 1024, memory = True).result()
+    statevector = result.get_statevector()
+
+    print("Statevector:", statevector)
+    
+
+if __name__ == "__main__":
+    main()
