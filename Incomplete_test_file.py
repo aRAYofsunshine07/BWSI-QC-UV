@@ -11,7 +11,7 @@ from UpdateHHL.py import prepare_initial_state, PhaseEstimate, controlled_rotati
 class HHLTests(unittest.TestCase):
     def test_phase_estimate(self):
         A = (1 / np.sqrt(2)) * np.array([[1, -1], [1, 1]])
-        b_qubits = QuantumRegister(2, name='b')
+        b_qubits = QuantumRegister(1, name='b')
         clock_qubits = QuantumRegister(2, name='clock')
         phase_estimation_circuit = PhaseEstimate(b_qubits, clock_qubits, A)
         
