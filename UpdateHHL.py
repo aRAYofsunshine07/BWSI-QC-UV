@@ -46,6 +46,39 @@ def PhaseEstimate(b: QuantumRegister, clock: QuantumRegister, unitary: List[List
     circuit.append(qft, qargs = [i + b.size for i in range(clock.size)])
     return circuit
 
+def InversePhaseEstimate(b: QuantumRegister, clock: QuantumRegister, unitary: List[List[complex]]) -> QuantumCircuit:
+    circuit = QuantumCircuit(b, clock)
+    #Runs QFT
+    qft = QFT(inverse = False, num_qubits = clock.size).to_gate()
+    circuit.append(qft, qargs = [i + b.size for i in range(clock.size)])
+    #Turns U gate matrix into inverse controlled U gate matrix where MSB is control
+    checkedUnitary = []
+    for _ in range(len(unitary) * 2):
+        row = []
+        for _ in range(len(unitary) * 2):
+            row.append(complex(0, 0))
+        checkedUnitary.append(row)
+    for i in range(len(unitary)):
+        for j in range(len(unitary)):
+            if(i == j):
+                checkedUnitary[i][j] = complex(1, 0)
+            checkedUnitary[i + len(unitary)][j + len(unitary)] = unitary[i][j]
+    #inverts U
+    checkedUnitary = np.linalg.inv(checkedUnitary)
+    #Creates gate from matrix
+    unitaryGate = Operator(checkedUnitary)
+    #Runs controlled U gate the correct amount of times for each clock qubit, reversing order
+    for i in range(clock.size):
+        #array is the input for the controlled U gate
+        array = []
+        for j in range(b.size - 1, -1, -1):
+            array.append(j)
+        array.append(i + b.size)
+        for _ in range(int(2.0 ** float(i))):
+            circuit.unitary(unitaryGate, qubits = array)
+    circuit.h(clock)
+    return circuit
+
 def controlled_rotation(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qubit: QuantumRegister) -> QuantumCircuit:
     # Crotating the ancilla qubit per clock-qubit
     for i in range(clock_qubits.size):
@@ -90,7 +123,7 @@ def main():
 
     controlled_rotation(qc, clock_qubits, ancilla_qubit)
 
-    inverse_qpe(qc, clock_qubits)
+    circ.compose(qc, clock_qubits)
 
     qc.measure(ancilla_qubit, 0)
     result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
@@ -103,8 +136,8 @@ def main():
         qc.compose(phase_estimation_circuit, inplace=True)
 
         controlled_rotation(qc, clock_qubits, ancilla_qubit)
-
-        inverse_qpe(qc, clock_qubits)
+        
+        qc.compose(InversePhaseEstimate(b_qubits, clock_qubits, A), inplace = True)
 
         qc.measure(ancilla_qubit, 0)
         result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
