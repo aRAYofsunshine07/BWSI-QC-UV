@@ -123,7 +123,7 @@ def main():
 
     controlled_rotation(qc, clock_qubits, ancilla_qubit)
 
-    circ.compose(qc, clock_qubits)
+    qc.compose(InversePhaseEstimate(b_qubits, clock_qubits, A), inplace = True)
 
     qc.measure(ancilla_qubit, 0)
     result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
