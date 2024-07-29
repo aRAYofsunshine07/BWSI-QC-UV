@@ -54,9 +54,32 @@ def controlled_rotation(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancil
     return qc
 
 # Updated 
-def inverse_qpe(qc: QuantumCircuit, clock_qubits: QuantumRegister):
-    qft_inv = QFT(len(clock_qubits)).inverse()
+def inverse_qpe(qc: QuantumCircuit, clock_qubits: QuantumRegister, unitary: List[List[complex]], b: QuantumRegister):
+    qft_inv = QFT(len(clock_qubits))
     qc.append(qft_inv, clock_qubits)
+    
+    checkedUnitary = []
+    for _ in range(len(unitary) * 2):
+        row = []
+        for _ in range(len(unitary) * 2):
+            row.append(complex(0, 0))
+        checkedUnitary.append(row)
+    for i in range(len(unitary)):
+        for j in range(len(unitary)):
+            if(i == j):
+                checkedUnitary[i][j] = complex(-1, 0)
+            checkedUnitary[i + len(unitary)][j + len(unitary)] = unitary[i][j]
+    #Creates gate from matrix
+    unitaryGate = Operator(checkedUnitary)
+    #Runs controlled U gate the correct amount of times for each clock qubit
+    for i in range(clock_qubits.size):
+        #array is the input for the controlled U gate
+        array = []
+        for j in range(b.size):
+            array.append(j)
+        array.append(i + b.size)
+        for _ in range(int(2.0 ** float(i))):
+            qc.unitary(unitaryGate, qubits = array)
     qc.h(clock_qubits)
     qc.barrier()
 
@@ -90,8 +113,6 @@ def main():
 
     controlled_rotation(qc, clock_qubits, ancilla_qubit)
 
-    inverse_qpe(qc, clock_qubits)
-
     qc.measure(ancilla_qubit, 0)
     result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
     s = result.get_memory()[0]
@@ -104,14 +125,14 @@ def main():
 
         controlled_rotation(qc, clock_qubits, ancilla_qubit)
 
-        inverse_qpe(qc, clock_qubits)
-
         qc.measure(ancilla_qubit, 0)
         result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
         s = result.get_memory()[0]
 
-    
 
+    inverse_qpe(qc, clock_qubits, A, b_qubits)
+    
+    print(qc)
     # Measure
     qc.measure(b_qubits, classical_reg)
 
@@ -122,7 +143,7 @@ def main():
     result = simulator.run(transpiled, shots = 1024, memory = True).result()
     statevector = result.get_statevector()
 
-    print("Statevector:", statevector)
+    print(statevector)
     
 
 if __name__ == "__main__":
