@@ -122,30 +122,17 @@ def main():
 
     controlled_rotation(qc, clock_qubits, ancilla_qubit)
 
-    qc.compose(InversePhaseEstimate(b_qubits, clock_qubits, A), inplace = True)
+
 
     qc.measure(ancilla_qubit, 0)
     result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
-    s = result.get_memory()[0]
-
-    while s == '0':
-        qc.add_register(ancilla_qubit)
-
-        phase_estimation_circuit = PhaseEstimate(b_qubits, clock_qubits, A)
-        qc.compose(phase_estimation_circuit, inplace=True)
-
-        controlled_rotation(qc, clock_qubits, ancilla_qubit)
-        
-        qc.compose(InversePhaseEstimate(b_qubits, clock_qubits, A), inplace = True)
-
-        qc.measure(ancilla_qubit, 0)
-        result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
-        s = result.get_memory()[0]
+    s = result.get_memory()[0][1]
+    #qc.compose(InversePhaseEstimate(b_qubits, clock_qubits, A), inplace = True)
 
     
 
     # Measure
-    qc.measure(b_qubits, classical_reg)
+    #qc.measure(b_qubits, classical_reg)
 
     # Simulation
     simulator = AerSimulator()
