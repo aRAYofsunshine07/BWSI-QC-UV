@@ -116,20 +116,9 @@ def main():
     qc = QuantumCircuit(b_qubits, clock_qubits, ancilla_qubit, classical_reg)
 
     prepare_initial_state(qc, b_qubits, b_normalized)
-
-    phase_estimation_circuit = PhaseEstimate(b_qubits, clock_qubits, A)
-    qc.compose(phase_estimation_circuit, inplace=True)
-
-    controlled_rotation(qc, clock_qubits, ancilla_qubit)
-
-    qc.compose(InversePhaseEstimate(b_qubits, clock_qubits, A), inplace = True)
-
-    qc.measure(ancilla_qubit, 0)
-    result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
-    s = result.get_memory()[0]
-
+    s = '0'
     while s == '0':
-        qc.add_register(ancilla_qubit)
+        qc.reset(ancilla_qubit)
 
         phase_estimation_circuit = PhaseEstimate(b_qubits, clock_qubits, A)
         qc.compose(phase_estimation_circuit, inplace=True)
@@ -140,12 +129,13 @@ def main():
 
         qc.measure(ancilla_qubit, 0)
         result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
-        s = result.get_memory()[0]
+        s = result.get_memory()[0][1]
+        print("s=" + s)
 
     
 
     # Measure
-    qc.measure(b_qubits, classical_reg)
+    #qc.measure(b_qubits, classical_reg)
 
     # Simulation
     simulator = AerSimulator()
