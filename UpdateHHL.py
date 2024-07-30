@@ -68,10 +68,10 @@ def InversePhaseEstimate(b: QuantumRegister, clock: QuantumRegister, unitary: Li
     #Creates gate from matrix
     unitaryGate = Operator(checkedUnitary)
     #Runs controlled U gate the correct amount of times for each clock qubit, reversing order
-    for i in range(clock.size):
+    for i in range(clock.size - 1, -1, -1):
         #array is the input for the controlled U gate
         array = []
-        for j in range(b.size - 1, -1, -1):
+        for j in range(b.size):
             array.append(j)
         array.append(i + b.size)
         for _ in range(int(2.0 ** float(i))):
