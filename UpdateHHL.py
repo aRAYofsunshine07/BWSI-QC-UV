@@ -81,9 +81,8 @@ def InversePhaseEstimate(b: QuantumRegister, clock: QuantumRegister, unitary: Li
 
 def controlled_rotation(qc: QuantumCircuit, clock_qubits: QuantumRegister, ancilla_qubit: QuantumRegister) -> QuantumCircuit:
     # Crotating the ancilla qubit per clock-qubit
-    for i in range(clock_qubits.size):
-        angle = 2 * np.arcsin(i / (clock_qubits.size - 1))
-        qc.cry(angle, clock_qubits[i], ancilla_qubit[0])
+    qc.cry(np.pi, clock_qubits[0], ancilla_qubit)
+    qc.cry(np.pi / 3, clock_qubits[1], ancilla_qubit)
     return qc
 
 # Updated 
