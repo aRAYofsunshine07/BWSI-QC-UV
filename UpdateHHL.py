@@ -97,6 +97,7 @@ def main():
     # Define matrix (A) and vector (b)
     A = (1 / np.sqrt(2)) * np.array([[1, -1], [1, 1]])
     b = np.array([1, 0])
+    u = [[complex(-0.5, 0.5), complex(0.5, 0.5)], [complex(0.5, 0.5), complex(-0.5, 0.5)]]
 
     # Normalize the vector b
     norm_b = np.linalg.norm(b)
@@ -110,41 +111,26 @@ def main():
     b_qubits = QuantumRegister(num_qubits, name='b')
     clock_qubits = QuantumRegister(n, name='clock')
     ancilla_qubit = QuantumRegister(1, name='ancilla')
-    classical_reg = ClassicalRegister(n, name='measure')
+    classical_reg = ClassicalRegister(num_qubits + n + 1, name='measure')
 
     # Initialize circuit
     qc = QuantumCircuit(b_qubits, clock_qubits, ancilla_qubit, classical_reg)
 
     prepare_initial_state(qc, b_qubits, b_normalized)
-    s = '0'
-    while s == '0':
-        qc.reset(ancilla_qubit)
 
-        phase_estimation_circuit = PhaseEstimate(b_qubits, clock_qubits, A)
-        qc.compose(phase_estimation_circuit, inplace=True)
+    phase_estimation_circuit = PhaseEstimate(b_qubits, clock_qubits, u)
+    qc.compose(phase_estimation_circuit, inplace=True)
 
-        controlled_rotation(qc, clock_qubits, ancilla_qubit)
+    controlled_rotation(qc, clock_qubits, ancilla_qubit)
         
-        qc.compose(InversePhaseEstimate(b_qubits, clock_qubits, A), inplace = True)
+    qc.compose(InversePhaseEstimate(b_qubits, clock_qubits, u), inplace = True)
 
-        qc.measure(ancilla_qubit, 0)
-        result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
-        s = result.get_memory()[0][1]
-        print("s=" + s)
+    qc.measure_all()
+    result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1048576, memory=True).result()
+    counts = result.get_counts()
+    print("x0:x1 = 1:" + str(round(np.sqrt(counts["1001 0000"]/counts["1000 0000"]), 2)))
 
     
-
-    # Measure
-    #qc.measure(b_qubits, classical_reg)
-
-    # Simulation
-    simulator = AerSimulator()
-    qc.save_statevector()
-    transpiled = transpile(qc, simulator)
-    result = simulator.run(transpiled, shots = 1024, memory = True).result()
-    statevector = result.get_statevector()
-
-    print("Statevector:", statevector)
     
 
 if __name__ == "__main__":
