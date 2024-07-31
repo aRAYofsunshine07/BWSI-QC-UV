@@ -121,12 +121,12 @@ def main():
     while s == '0':
         qc.reset(ancilla_qubit)
 
-        phase_estimation_circuit = PhaseEstimate(b_qubits, clock_qubits, A)
+        phase_estimation_circuit = PhaseEstimate(b_qubits, clock_qubits, u)
         qc.compose(phase_estimation_circuit, inplace=True)
 
         controlled_rotation(qc, clock_qubits, ancilla_qubit)
         
-        qc.compose(InversePhaseEstimate(b_qubits, clock_qubits, A), inplace = True)
+        qc.compose(InversePhaseEstimate(b_qubits, clock_qubits, u), inplace = True)
 
         qc.measure(ancilla_qubit, 0)
         result = AerSimulator().run(transpile(qc, AerSimulator()), shots=1, memory=True).result()
