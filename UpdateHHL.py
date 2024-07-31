@@ -97,7 +97,6 @@ def main():
     # Define matrix (A) and vector (b)
     A = (1 / np.sqrt(2)) * np.array([[1, -1], [1, 1]])
     b = np.array([1, 0])
-    u = [[complex(-0.5, 0.5), complex(0.5, 0.5)], [complex(0.5, 0.5), complex(-0.5, 0.5)]]
 
     # Normalize the vector b
     norm_b = np.linalg.norm(b)
